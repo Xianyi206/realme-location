@@ -1,0 +1,5 @@
+* text=auto eol=lf
+# Preserve vendored upstream bytes so integrity hashes survive Git checkouts.
+app/src/main/assets/leaflet.js -text
+app/src/main/assets/leaflet.css -text
+THIRD_PARTY_LEAFLET.txt -text

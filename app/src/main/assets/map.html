@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>选择目标位置 · 定点助手</title>
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="map.css">
+  <script src="leaflet.js" defer></script>
+  <script src="map.js" defer></script>
+</head>
+<body>
+  <header><h1>点选目标位置</h1><p>拖动地图，放大后轻点目标地点。</p></header>
+  <main id="map" aria-label="目标位置地图"></main>
+  <footer>
+    <p id="network" role="status">地图加载中；地图需要联网。</p>
+    <output id="coordinates" aria-live="polite">还没有选择位置</output>
+    <button id="choose" type="button" disabled>使用这个位置</button>
+    <p class="note">仅填入坐标，返回后点击“开始模拟定位”生效。</p>
+  </footer>
+</body>
+</html>
