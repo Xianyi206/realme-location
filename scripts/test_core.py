@@ -4,10 +4,10 @@ import subprocess
 import json
 import hashlib
 import re
+from toolchain import java_tool
 from datetime import datetime, timezone
 
 root = Path(__file__).resolve().parents[1]
-java = Path(os.environ.get('JAVA_HOME', r'E:\AI\toolchain\jdk17')) / 'bin'
 out = root / 'build' / 'core-tests'
 out.mkdir(parents=True, exist_ok=True)
 sources = [root / 'app/src/main/java/local/position/helper/GeoPoint.java']
@@ -16,10 +16,10 @@ session = root / 'app/src/main/java/local/position/helper/MockSession.java'
 if session.exists():
     sources.append(session)
 sources += list((root / 'tests').glob('*.java'))
-subprocess.run([str(java / 'javac.exe'), '--release', '8', '-encoding', 'UTF-8', '-d', str(out), *map(str, sources)], check=True)
+subprocess.run([str(java_tool('javac')), '--release', '8', '-encoding', 'UTF-8', '-d', str(out), *map(str, sources)], check=True)
 suites = []
 for source in sorted((root / 'tests').glob('*.java')):
-    result = subprocess.run([str(java / 'java.exe'), '-cp', str(out), 'local.position.helper.' + source.stem],
+    result = subprocess.run([str(java_tool('java')), '-cp', str(out), 'local.position.helper.' + source.stem],
         capture_output=True, text=True, encoding='utf-8')
     print(result.stdout, end='')
     if result.stderr:

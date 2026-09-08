@@ -9,12 +9,14 @@ import os
 import subprocess
 import zipfile
 import uuid
+import secrets
+from toolchain import configured_path
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 root = Path(__file__).resolve().parents[1]
-sdk = Path(os.environ.get('ANDROID_HOME', r'E:\AI\toolchain\android-sdk'))
-java = Path(os.environ.get('JAVA_HOME', r'E:\AI\toolchain\jdk17')) / 'bin'
+sdk = configured_path('ANDROID_HOME')
+java = configured_path('JAVA_HOME') / 'bin'
 bt = sdk / 'build-tools' / '35.0.0'
 android = sdk / 'platforms' / 'android-35' / 'android.jar'
 build = root / 'build' / ('apk-' + uuid.uuid4().hex[:10])
@@ -45,16 +47,29 @@ run(bt / 'zipalign.exe', '-f', '-p', '4', build / 'unsigned.apk', build / 'align
 keys = root / '.keys'
 keys.mkdir(exist_ok=True)
 key = keys / 'local-development.p12'
+password_file = keys / 'development-password.txt'
+password = os.environ.get('DD_KEYSTORE_PASSWORD')
+if not password and password_file.exists():
+    password = password_file.read_text(encoding='utf-8').strip()
+if not password:
+    if key.exists():
+        raise RuntimeError('Existing signing key: supply DD_KEYSTORE_PASSWORD; the key will not be replaced')
+    password = secrets.token_urlsafe(32)
+    with password_file.open('x', encoding='utf-8') as output_password:
+        output_password.write(password)
+    if os.name != 'nt':
+        password_file.chmod(0o600)
+os.environ['DD_KEYSTORE_PASSWORD'] = password
 if not key.exists():
     run(java / 'keytool.exe', '-genkeypair', '-keystore', key, '-storetype', 'PKCS12',
-        '-storepass', 'android', '-keypass', 'android', '-alias', 'local-development',
+        '-storepass:env', 'DD_KEYSTORE_PASSWORD', '-keypass:env', 'DD_KEYSTORE_PASSWORD', '-alias', 'local-development',
         '-keyalg', 'RSA', '-keysize', '3072', '-validity', '3650',
         '-dname', 'CN=Local Development, OU=Personal App, O=DingDian Helper, C=CN')
 manifest = ET.parse(root / 'app/src/main/AndroidManifest.xml').getroot()
 version = manifest.attrib['{http://schemas.android.com/apk/res/android}versionName']
 output = root / 'build' / ('DingDianHelper-' + version + '.apk')
 run(java / 'java.exe', '-jar', bt / 'lib/apksigner.jar', 'sign', '--ks', key,
-    '--ks-key-alias', 'local-development', '--ks-pass', 'pass:android', '--key-pass', 'pass:android',
+    '--ks-key-alias', 'local-development', '--ks-pass', 'env:DD_KEYSTORE_PASSWORD', '--key-pass', 'env:DD_KEYSTORE_PASSWORD',
     '--out', output, build / 'aligned.apk')
 run(java / 'java.exe', '-jar', bt / 'lib/apksigner.jar', 'verify', '--verbose', '--print-certs', output)
 run(bt / 'zipalign.exe', '-c', '4', output)

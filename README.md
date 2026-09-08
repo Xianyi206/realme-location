@@ -70,4 +70,6 @@ python scripts/build_apk.py
 
 本地开发签名保存在项目 `.keys/`，不会提交到 Git 或装入源码压缩包。后续覆盖更新需保留同一签名。首次自行构建会生成新的开发签名，不能用它覆盖安装原作者签名的安装包。
 
+新开发签名使用随机口令，保存在 `.keys/development-password.txt`。已有签名的构建需设置环境变量 `DD_KEYSTORE_PASSWORD`，不要把口令写进脚本或提交到 Git。发布前请阅读 [源码安全说明](SECURITY.md) 并运行其中的检查。早期本机模拟器下载诊断脚本已从分发源码中移除，可自行使用 Android SDK Manager 配置测试模拟器。
+
 参考：[Android 定位 API](https://developer.android.com/reference/android/location/LocationManager)、[开发者选项](https://developer.android.com/studio/debug/dev-options)、[Android 导航设计](https://developer.android.com/design/ui/mobile/guides/layout-and-content/layout-and-nav-patterns)、[OpenStreetMap 地图块政策](https://operations.osmfoundation.org/policies/tiles/)。

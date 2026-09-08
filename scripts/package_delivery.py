@@ -4,6 +4,7 @@ import hashlib
 import json
 import shutil
 import zipfile
+from source_safety import tracked_sources, source_archive
 
 root = Path(__file__).resolve().parents[1]
 def read(name):
@@ -19,6 +20,7 @@ core = read('build/core-tests/results.json')
 maps = read('build/map-tests/results.json')
 map_receipt = read('build/map-tests/receipt.json')
 version = build['version']
+source_files = tracked_sources(root)
 apk = Path(build['artifact'])
 assert core['total_passed'] == 44
 unchanged(core['source_hashes'])
@@ -38,15 +40,11 @@ target_apk = delivery / ('定点助手-' + version + '.apk')
 shutil.copy2(apk, target_apk)
 shutil.copy2(root / 'README.md', delivery / '使用说明.md')
 shutil.copy2(root / 'docs/UI-1.2.md', delivery / '交互变更与验收.md')
-source_files = [p for folder in ('app', 'scripts', 'tests', 'docs') for p in (root / folder).rglob('*') if p.is_file() and '__pycache__' not in p.parts]
-source_files += [root / 'README.md', root / 'THIRD_PARTY_LEAFLET.txt', root / '.gitignore']
-with zipfile.ZipFile(delivery / '定点助手-源码.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
-    for path in sorted(source_files):
-        archive.write(path, 'realme-location/' + path.relative_to(root).as_posix())
+source_archive(root, delivery / '定点助手-源码.zip')
 assert digest(target_apk) == build['sha256']
 report = {
     'created_at': datetime.now(timezone.utc).isoformat(), 'version': version,
-    'apk': str(target_apk), 'apk_sha256': build['sha256'],
+    'apk': target_apk.name, 'apk_sha256': build['sha256'],
     'core_tests': core, 'browser_map_results': maps, 'browser_map_receipt': map_receipt,
     'apk_signature': 'v2/v3 verified', 'apk_zip_alignment': 'passed',
     'bundled_map_matches_tested_sources': True,

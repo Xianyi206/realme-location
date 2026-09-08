@@ -12,3 +12,13 @@ __pycache__/
 *.pem
 .env
 .env.*
+*.key
+*.pfx
+*.log
+*.zip
+saved-places*.bin
+settings.xml
+.idea/
+.vscode/
+*.local
+*.local.*

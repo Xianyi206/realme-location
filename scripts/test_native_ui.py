@@ -1,9 +1,11 @@
 """Black-box Android UI interaction through adb, restricted to our disposable emulator."""
 from pathlib import Path
 import subprocess,time,re,json,xml.etree.ElementTree as ET,hashlib
+import os
+from toolchain import configured_path
 
 root=Path(__file__).resolve().parents[1]
-adb=Path(r'E:\AI\toolchain\android-sdk\platform-tools\adb.exe')
+adb=configured_path('ANDROID_HOME')/'platform-tools'/('adb.exe' if os.name=='nt' else 'adb')
 serial='emulator-5580';package='local.position.helper'
 out=root/'build/native-ui-tests';out.mkdir(parents=True,exist_ok=True)
 results=[]
